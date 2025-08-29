@@ -1,0 +1,49 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/user:latest', '.']
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/user:latest']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'user-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/user:latest'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--add-cloudsql-instances'
+      - 'mobility-tracker-467907:us-central1:postgres'
+      - '--service-account'
+      - 'mobility-tracker-user-report@mobility-tracker-467907.iam.gserviceaccount.com'
+      - '--set-env-vars'
+      - 'DB_PORT=5432,DB_NAME=postgres,DB_USER=postgres'
+      - '--set-secrets'
+      - 'DB_HOST=DB_HOST:latest'
+      - '--set-secrets'
+      - 'DB_PASS=DB_PASSWORD:latest'
+      - '--project'
+      - '$PROJECT_ID'
+
+substitutions:
+  _REGION: 'us-central1'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

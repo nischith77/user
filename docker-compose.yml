@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  adddevice-app:
+    build: .
+    container_name: adddevice-container
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - .:/app
